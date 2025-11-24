@@ -4,6 +4,7 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { Brain } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
