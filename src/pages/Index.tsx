@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import ChatHeader from "@/components/ChatHeader";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
+import SettingsDialog from "@/components/SettingsDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useApiKeys } from "@/hooks/useApiKeys";
 import { motion } from "framer-motion";
 import { Brain } from "lucide-react";
 
@@ -14,8 +16,10 @@ interface Message {
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { apiKeys, updateApiKeys } = useApiKeys();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,7 +58,13 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen gradient-main">
-      <ChatHeader />
+      <ChatHeader onSettingsClick={() => setSettingsOpen(true)} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        apiKeys={apiKeys}
+        onSave={updateApiKeys}
+      />
       
       <motion.div
         initial={{ opacity: 0 }}
