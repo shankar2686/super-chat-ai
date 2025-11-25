@@ -7,9 +7,10 @@ interface ChatMessageProps {
   content: string;
   isStreaming?: boolean;
   provider?: string;
+  apiUrl?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming, provider }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, provider, apiUrl }: ChatMessageProps) => {
   const isUser = role === "user";
 
   const getProviderLabel = (provider?: string) => {
@@ -20,6 +21,12 @@ const ChatMessage = ({ role, content, isStreaming, provider }: ChatMessageProps)
       groq: "Groq"
     };
     return provider ? labels[provider] || provider : "";
+  };
+
+  const truncateUrl = (url?: string) => {
+    if (!url) return "";
+    const maxLength = 50;
+    return url.length > maxLength ? url.substring(0, maxLength) + "..." : url;
   };
 
   return (
@@ -46,9 +53,18 @@ const ChatMessage = ({ role, content, isStreaming, provider }: ChatMessageProps)
             : "gradient-message text-foreground"
         )}
       >
-        {!isUser && provider && (
-          <div className="text-xs text-muted-foreground mb-2 font-medium">
-            {getProviderLabel(provider)}
+        {!isUser && (provider || apiUrl) && (
+          <div className="text-xs text-muted-foreground mb-2 space-y-1">
+            {provider && (
+              <div className="font-medium">
+                {getProviderLabel(provider)}
+              </div>
+            )}
+            {apiUrl && (
+              <div className="font-mono opacity-70" title={apiUrl}>
+                {truncateUrl(apiUrl)}
+              </div>
+            )}
           </div>
         )}
         <p className="text-sm leading-relaxed whitespace-pre-wrap">
