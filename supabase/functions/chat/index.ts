@@ -14,7 +14,7 @@ const DEFAULT_MODELS = {
   openai: 'gpt-4o-mini',
   anthropic: 'claude-3-5-sonnet-20241022',
   gemini: 'gemini-pro',
-  groq: 'mixtral-8x7b-32768',
+  groq: 'llama-3.3-70b-versatile',
 };
 
 Deno.serve(async (req) => {
