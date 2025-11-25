@@ -2,14 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import ChatHeader from "@/components/ChatHeader";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
-import SettingsDialog from "@/components/SettingsDialog";
 import UserIdDialog from "@/components/UserIdDialog";
 import { useToast } from "@/hooks/use-toast";
-import { useApiKeys } from "@/hooks/useApiKeys";
 import { useUserId } from "@/hooks/useUserId";
 import { motion } from "framer-motion";
 import { Brain } from "lucide-react";
-import OpenAI from "openai";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,10 +17,8 @@ interface Message {
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { apiKeys, updateApiKeys } = useApiKeys();
   const { userId, updateUserId } = useUserId();
 
   const scrollToBottom = () => {
@@ -34,44 +30,26 @@ const Index = () => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    if (!apiKeys.openai || !apiKeys.supermemory) {
-      toast({
-        title: "API Keys Required",
-        description: "Please configure your API keys in settings.",
-        variant: "destructive",
-      });
-      setSettingsOpen(true);
-      return;
-    }
-
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      const client = new OpenAI({
-        apiKey: apiKeys.openai,
-        baseURL: "https://api.supermemory.ai/v3/https://api.openai.com/v1",
-        defaultHeaders: {
-          "x-supermemory-api-key": apiKeys.supermemory,
-          "x-sm-user-id": userId,
-        },
-        dangerouslyAllowBrowser: true,
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: {
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          userId: userId,
+        }
       });
 
-      const response = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [...messages, userMessage].map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-        max_tokens: 1000,
-        temperature: 0.7,
-      });
+      if (error) throw error;
 
       const assistantMessage: Message = {
         role: "assistant",
-        content: response.choices[0].message.content || "No response generated.",
+        content: data.choices[0].message.content || "No response generated.",
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -88,14 +66,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen gradient-main">
-      <ChatHeader onSettingsClick={() => setSettingsOpen(true)} />
+      <ChatHeader />
       <UserIdDialog open={!userId} onSave={updateUserId} />
-      <SettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        apiKeys={apiKeys}
-        onSave={updateApiKeys}
-      />
       
       <motion.div
         initial={{ opacity: 0 }}
