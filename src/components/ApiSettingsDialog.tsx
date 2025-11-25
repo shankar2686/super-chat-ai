@@ -14,7 +14,7 @@ interface ApiSettingsDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (provider: LLMProvider, apiKey: string, supermemoryKey: string, userId: string) => void;
   currentProvider: LLMProvider;
-  currentApiKey: string;
+  currentApiKeys: Record<LLMProvider, string>;
   currentSupermemoryKey: string;
   currentUserId: string;
 }
@@ -24,22 +24,22 @@ const ApiSettingsDialog = ({
   onOpenChange,
   onSave,
   currentProvider,
-  currentApiKey,
+  currentApiKeys,
   currentSupermemoryKey,
   currentUserId,
 }: ApiSettingsDialogProps) => {
   const [provider, setProvider] = useState<LLMProvider>(currentProvider);
-  const [apiKey, setApiKey] = useState(currentApiKey);
+  const [apiKey, setApiKey] = useState(currentApiKeys[currentProvider]);
   const [supermemoryKey, setSupermemoryKey] = useState(currentSupermemoryKey);
   const [userId, setUserId] = useState(currentUserId);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showSupermemoryKey, setShowSupermemoryKey] = useState(false);
   const { toast } = useToast();
 
-  // Update API key field when provider or currentApiKey changes
+  // Update API key field when provider changes
   useEffect(() => {
-    setApiKey(currentApiKey);
-  }, [currentApiKey, provider]);
+    setApiKey(currentApiKeys[provider]);
+  }, [provider, currentApiKeys]);
 
   const handleSave = () => {
     if (!apiKey.trim() || !supermemoryKey.trim() || !userId.trim()) {

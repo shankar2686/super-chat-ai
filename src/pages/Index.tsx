@@ -111,7 +111,7 @@ const Index = () => {
         onOpenChange={setSettingsOpen}
         onSave={handleSaveSettings}
         currentProvider={provider}
-        currentApiKey={apiKeys[provider]}
+        currentApiKeys={apiKeys}
         currentSupermemoryKey={supermemoryKey}
         currentUserId={userId}
       />
