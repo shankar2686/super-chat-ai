@@ -11,10 +11,11 @@ export type LLMProvider = "openai" | "anthropic" | "gemini" | "groq";
 interface ApiSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (provider: LLMProvider, apiKey: string, supermemoryKey: string) => void;
+  onSave: (provider: LLMProvider, apiKey: string, supermemoryKey: string, userId: string) => void;
   currentProvider: LLMProvider;
   currentApiKey: string;
   currentSupermemoryKey: string;
+  currentUserId: string;
 }
 
 const ApiSettingsDialog = ({
@@ -24,23 +25,25 @@ const ApiSettingsDialog = ({
   currentProvider,
   currentApiKey,
   currentSupermemoryKey,
+  currentUserId,
 }: ApiSettingsDialogProps) => {
   const [provider, setProvider] = useState<LLMProvider>(currentProvider);
   const [apiKey, setApiKey] = useState(currentApiKey);
   const [supermemoryKey, setSupermemoryKey] = useState(currentSupermemoryKey);
+  const [userId, setUserId] = useState(currentUserId);
   const { toast } = useToast();
 
   const handleSave = () => {
-    if (!apiKey.trim() || !supermemoryKey.trim()) {
+    if (!apiKey.trim() || !supermemoryKey.trim() || !userId.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter both API keys",
+        description: "Please enter all required fields",
         variant: "destructive",
       });
       return;
     }
 
-    onSave(provider, apiKey.trim(), supermemoryKey.trim());
+    onSave(provider, apiKey.trim(), supermemoryKey.trim(), userId.trim());
     toast({
       title: "Settings Saved",
       description: "Your API settings have been updated for this session",
@@ -90,6 +93,15 @@ const ApiSettingsDialog = ({
               placeholder="Enter your Supermemory API key"
               value={supermemoryKey}
               onChange={(e) => setSupermemoryKey(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="userId">User ID (for Supermemory)</Label>
+            <Input
+              id="userId"
+              placeholder="e.g., John or user_123"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
             />
           </div>
         </div>

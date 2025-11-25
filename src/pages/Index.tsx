@@ -89,10 +89,11 @@ const Index = () => {
     }
   };
 
-  const handleSaveSettings = (newProvider: LLMProvider, newApiKey: string, newSupermemoryKey: string) => {
+  const handleSaveSettings = (newProvider: LLMProvider, newApiKey: string, newSupermemoryKey: string, newUserId: string) => {
     setProvider(newProvider);
     setApiKey(newApiKey);
     setSupermemoryKey(newSupermemoryKey);
+    updateUserId(newUserId);
   };
 
   return (
@@ -106,6 +107,7 @@ const Index = () => {
         currentProvider={provider}
         currentApiKey={apiKey}
         currentSupermemoryKey={supermemoryKey}
+        currentUserId={userId}
       />
       
       <motion.div
