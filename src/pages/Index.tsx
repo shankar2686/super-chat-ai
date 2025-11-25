@@ -13,6 +13,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   provider?: string;
+  apiUrl?: string;
 }
 
 const Index = () => {
@@ -57,6 +58,14 @@ const Index = () => {
       return;
     }
 
+    const LLM_URLS: Record<LLMProvider, string> = {
+      openai: 'https://api.supermemory.ai/v3/https://api.openai.com/v1/chat/completions',
+      anthropic: 'https://api.supermemory.ai/v3/https://api.anthropic.com/v1/messages',
+      gemini: 'https://api.supermemory.ai/v3/https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      groq: 'https://api.supermemory.ai/v3/https://api.groq.com/openai/v1/chat/completions',
+    };
+
+    const apiUrl = LLM_URLS[provider];
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
@@ -81,6 +90,7 @@ const Index = () => {
         role: "assistant",
         content: data.choices[0].message.content || "No response generated.",
         provider: provider,
+        apiUrl: apiUrl,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -151,6 +161,7 @@ const Index = () => {
               role={message.role}
               content={message.content}
               provider={message.provider}
+              apiUrl={message.apiUrl}
             />
           ))}
             {isLoading && (
