@@ -3,6 +3,7 @@ import ChatHeader from "@/components/ChatHeader";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import UserIdDialog from "@/components/UserIdDialog";
+import ApiSettingsDialog, { LLMProvider } from "@/components/ApiSettingsDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useUserId } from "@/hooks/useUserId";
 import { motion } from "framer-motion";
@@ -17,9 +18,20 @@ interface Message {
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [provider, setProvider] = useState<LLMProvider>("openai");
+  const [apiKey, setApiKey] = useState("");
+  const [supermemoryKey, setSupermemoryKey] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { userId, updateUserId } = useUserId();
+
+  // Check if API keys are configured on mount
+  useEffect(() => {
+    if (!apiKey || !supermemoryKey) {
+      setSettingsOpen(true);
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,6 +42,16 @@ const Index = () => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
+    if (!apiKey || !supermemoryKey) {
+      toast({
+        title: "API Keys Required",
+        description: "Please configure your API keys in settings first",
+        variant: "destructive",
+      });
+      setSettingsOpen(true);
+      return;
+    }
+
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
@@ -42,6 +64,9 @@ const Index = () => {
             content: m.content,
           })),
           userId: userId,
+          provider: provider,
+          apiKey: apiKey,
+          supermemoryKey: supermemoryKey,
         }
       });
 
@@ -64,10 +89,24 @@ const Index = () => {
     }
   };
 
+  const handleSaveSettings = (newProvider: LLMProvider, newApiKey: string, newSupermemoryKey: string) => {
+    setProvider(newProvider);
+    setApiKey(newApiKey);
+    setSupermemoryKey(newSupermemoryKey);
+  };
+
   return (
     <div className="flex flex-col h-screen gradient-main">
-      <ChatHeader />
+      <ChatHeader onSettingsClick={() => setSettingsOpen(true)} />
       <UserIdDialog open={!userId} onSave={updateUserId} />
+      <ApiSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onSave={handleSaveSettings}
+        currentProvider={provider}
+        currentApiKey={apiKey}
+        currentSupermemoryKey={supermemoryKey}
+      />
       
       <motion.div
         initial={{ opacity: 0 }}
