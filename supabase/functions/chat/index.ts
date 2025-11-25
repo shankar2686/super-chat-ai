@@ -7,7 +7,7 @@ const LLM_URLS = {
   openai: 'https://api.supermemory.ai/v3/https://api.openai.com/v1/',
   anthropic: 'https://api.supermemory.ai/v3/https://api.anthropic.com/v1/',
   gemini: 'https://api.supermemory.ai/v3/https://generativelanguage.googleapis.com/v1beta/openai/',
-  groq: 'https://api.supermemory.ai/v3/https://api.groq.com/openai/v1',
+  groq: 'https://api.supermemory.ai/v3/https://api.groq.com/openai/v1/',
 };
 
 const DEFAULT_MODELS = {
