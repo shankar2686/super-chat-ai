@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  provider?: string;
 }
 
 const Index = () => {
@@ -79,6 +80,7 @@ const Index = () => {
       const assistantMessage: Message = {
         role: "assistant",
         content: data.choices[0].message.content || "No response generated.",
+        provider: provider,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -143,13 +145,14 @@ const Index = () => {
           </motion.div>
         ) : (
           <>
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                role={message.role}
-                content={message.content}
-              />
-            ))}
+          {messages.map((message, index) => (
+            <ChatMessage
+              key={index}
+              role={message.role}
+              content={message.content}
+              provider={message.provider}
+            />
+          ))}
             {isLoading && (
               <ChatMessage
                 role="assistant"

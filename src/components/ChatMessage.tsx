@@ -6,10 +6,21 @@ interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+  provider?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, provider }: ChatMessageProps) => {
   const isUser = role === "user";
+
+  const getProviderLabel = (provider?: string) => {
+    const labels: Record<string, string> = {
+      openai: "OpenAI",
+      anthropic: "Anthropic",
+      gemini: "Gemini",
+      groq: "Groq"
+    };
+    return provider ? labels[provider] || provider : "";
+  };
 
   return (
     <motion.div
@@ -35,6 +46,11 @@ const ChatMessage = ({ role, content, isStreaming }: ChatMessageProps) => {
             : "gradient-message text-foreground"
         )}
       >
+        {!isUser && provider && (
+          <div className="text-xs text-muted-foreground mb-2 font-medium">
+            {getProviderLabel(provider)}
+          </div>
+        )}
         <p className="text-sm leading-relaxed whitespace-pre-wrap">
           {content}
           {isStreaming && (
