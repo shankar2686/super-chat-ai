@@ -1,7 +1,12 @@
-import { Brain } from "lucide-react";
+import { Brain, Settings } from "lucide-react";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
-const ChatHeader = () => {
+interface ChatHeaderProps {
+  onSettingsClick: () => void;
+}
+
+const ChatHeader = ({ onSettingsClick }: ChatHeaderProps) => {
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -14,9 +19,12 @@ const ChatHeader = () => {
         </div>
         <div>
           <h1 className="text-xl font-semibold text-foreground">AI Memory Chat</h1>
-          <p className="text-sm text-muted-foreground">Powered by OpenAI & Supermemory</p>
+          <p className="text-sm text-muted-foreground">Multi-LLM with Supermemory</p>
         </div>
       </div>
+      <Button variant="outline" size="icon" onClick={onSettingsClick}>
+        <Settings className="w-4 h-4" />
+      </Button>
     </motion.header>
   );
 };
