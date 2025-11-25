@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import ChatHeader from "@/components/ChatHeader";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
-import UserIdDialog from "@/components/UserIdDialog";
 import ApiSettingsDialog, { LLMProvider } from "@/components/ApiSettingsDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useUserId } from "@/hooks/useUserId";
@@ -26,12 +25,12 @@ const Index = () => {
   const { toast } = useToast();
   const { userId, updateUserId } = useUserId();
 
-  // Check if API keys are configured on mount
+  // Check if API keys and userId are configured on mount
   useEffect(() => {
-    if (!apiKey || !supermemoryKey) {
+    if (!apiKey || !supermemoryKey || !userId) {
       setSettingsOpen(true);
     }
-  }, []);
+  }, [apiKey, supermemoryKey, userId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,12 +41,13 @@ const Index = () => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    if (!apiKey || !supermemoryKey) {
+    if (!apiKey || !supermemoryKey || !userId) {
       toast({
-        title: "API Keys Required",
-        description: "Please configure your API keys in settings first",
+        title: "Configuration Required",
+        description: "Please configure your API keys and User ID in settings first",
         variant: "destructive",
       });
+      setSettingsOpen(true);
       setSettingsOpen(true);
       return;
     }
@@ -99,7 +99,6 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen gradient-main">
       <ChatHeader onSettingsClick={() => setSettingsOpen(true)} />
-      <UserIdDialog open={!userId} onSave={updateUserId} />
       <ApiSettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
