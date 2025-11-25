@@ -3,10 +3,13 @@ import ChatHeader from "@/components/ChatHeader";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import SettingsDialog from "@/components/SettingsDialog";
+import UserIdDialog from "@/components/UserIdDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useApiKeys } from "@/hooks/useApiKeys";
+import { useUserId } from "@/hooks/useUserId";
 import { motion } from "framer-motion";
 import { Brain } from "lucide-react";
+import OpenAI from "openai";
 
 interface Message {
   role: "user" | "assistant";
@@ -20,6 +23,7 @@ const Index = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { apiKeys, updateApiKeys } = useApiKeys();
+  const { userId, updateUserId } = useUserId();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,28 +34,54 @@ const Index = () => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
+    if (!apiKeys.openai || !apiKeys.supermemory) {
+      toast({
+        title: "API Keys Required",
+        description: "Please configure your API keys in settings.",
+        variant: "destructive",
+      });
+      setSettingsOpen(true);
+      return;
+    }
+
     const userMessage: Message = { role: "user", content };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      // TODO: Implement OpenAI and Supermemory integration
-      // For now, just echo the message
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: "I'm ready to chat! OpenAI and Supermemory integration coming soon.",
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+      const client = new OpenAI({
+        apiKey: apiKeys.openai,
+        baseURL: "https://api.supermemory.ai/v3/https://api.openai.com/v1",
+        defaultHeaders: {
+          "x-supermemory-api-key": apiKeys.supermemory,
+          "x-sm-user-id": userId,
+        },
+        dangerouslyAllowBrowser: true,
+      });
+
+      const response = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        max_tokens: 1000,
+        temperature: 0.7,
+      });
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: response.choices[0].message.content || "No response generated.",
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -59,6 +89,7 @@ const Index = () => {
   return (
     <div className="flex flex-col h-screen gradient-main">
       <ChatHeader onSettingsClick={() => setSettingsOpen(true)} />
+      <UserIdDialog open={!userId} onSave={updateUserId} />
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
