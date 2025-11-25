@@ -19,7 +19,12 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [provider, setProvider] = useState<LLMProvider>("openai");
-  const [apiKey, setApiKey] = useState("");
+  const [apiKeys, setApiKeys] = useState<Record<LLMProvider, string>>({
+    openai: "",
+    anthropic: "",
+    gemini: "",
+    groq: "",
+  });
   const [supermemoryKey, setSupermemoryKey] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -27,10 +32,10 @@ const Index = () => {
 
   // Check if API keys and userId are configured on mount
   useEffect(() => {
-    if (!apiKey || !supermemoryKey || !userId) {
+    if (!apiKeys[provider] || !supermemoryKey || !userId) {
       setSettingsOpen(true);
     }
-  }, [apiKey, supermemoryKey, userId]);
+  }, [apiKeys, provider, supermemoryKey, userId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,13 +46,12 @@ const Index = () => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    if (!apiKey || !supermemoryKey || !userId) {
+    if (!apiKeys[provider] || !supermemoryKey || !userId) {
       toast({
         title: "Configuration Required",
         description: "Please configure your API keys and User ID in settings first",
         variant: "destructive",
       });
-      setSettingsOpen(true);
       setSettingsOpen(true);
       return;
     }
@@ -65,7 +69,7 @@ const Index = () => {
           })),
           userId: userId,
           provider: provider,
-          apiKey: apiKey,
+          apiKey: apiKeys[provider],
           supermemoryKey: supermemoryKey,
         }
       });
@@ -91,7 +95,10 @@ const Index = () => {
 
   const handleSaveSettings = (newProvider: LLMProvider, newApiKey: string, newSupermemoryKey: string, newUserId: string) => {
     setProvider(newProvider);
-    setApiKey(newApiKey);
+    setApiKeys((prev) => ({
+      ...prev,
+      [newProvider]: newApiKey,
+    }));
     setSupermemoryKey(newSupermemoryKey);
     updateUserId(newUserId);
   };
@@ -104,7 +111,7 @@ const Index = () => {
         onOpenChange={setSettingsOpen}
         onSave={handleSaveSettings}
         currentProvider={provider}
-        currentApiKey={apiKey}
+        currentApiKey={apiKeys[provider]}
         currentSupermemoryKey={supermemoryKey}
         currentUserId={userId}
       />
